@@ -1,4 +1,4 @@
-# Agentopy
+# Agentopy (wip)
 
 Lightweight, modular, extensible framework for building agents and environments. 
 
