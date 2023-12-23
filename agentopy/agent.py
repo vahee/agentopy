@@ -119,14 +119,23 @@ class Agent(WithStateMixin, IAgent):
 
         await aio.gather(*[component.on_heartbeat(self.state) for component in self._components])
 
-        if self._mode == self.AGENT_MODE_OBSERVING:
-            await self.observe()
-
-        if self._mode == self.AGENT_MODE_THINKING:
-            await self.think()
-
-        if self._mode == self.AGENT_MODE_ACTING:
-            await self.act()
-
-        if self._mode == self.AGENT_MODE_IDLE:
-            await self.idle()
+        if self._heartreate_ms == 0:
+            # if heartreate_ms is 0, then the heartbeat is synchronous, so we do all modes in one heartbeat
+            if self._mode == self.AGENT_MODE_OBSERVING:
+                await self.observe()
+            if self._mode == self.AGENT_MODE_THINKING:
+                await self.think()
+            if self._mode == self.AGENT_MODE_ACTING:
+                await self.act()
+            if self._mode == self.AGENT_MODE_IDLE:
+                await self.idle()
+        else:
+            # if heartreate_ms is not 0, then the heartbeat is asynchronous, so we do one mode per heartbeat
+            if self._mode == self.AGENT_MODE_OBSERVING:
+                await self.observe()
+            elif self._mode == self.AGENT_MODE_THINKING:
+                await self.think()
+            elif self._mode == self.AGENT_MODE_ACTING:
+                await self.act()
+            elif self._mode == self.AGENT_MODE_IDLE:
+                await self.idle()
