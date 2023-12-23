@@ -122,11 +122,11 @@ class Agent(WithStateMixin, IAgent):
         if self._mode == self.AGENT_MODE_OBSERVING:
             await self.observe()
 
-        elif self._mode == self.AGENT_MODE_THINKING:
+        if self._mode == self.AGENT_MODE_THINKING:
             await self.think()
 
-        elif self._mode == self.AGENT_MODE_ACTING:
+        if self._mode == self.AGENT_MODE_ACTING:
             await self.act()
 
-        elif self._mode == self.AGENT_MODE_IDLE:
+        if self._mode == self.AGENT_MODE_IDLE:
             await self.idle()
