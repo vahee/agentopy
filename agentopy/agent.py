@@ -24,7 +24,7 @@ class Agent(WithStateMixin, IAgent):
         environment: IEnvironment,
         components: List[IAgentComponent],
         idle_timeout: int = 7200,
-        heartrate_ms: int = 1000
+        heartrate_ms: float = 1000
     ):
         """Initializes the agent with the specified name and policy"""
         super().__init__()
@@ -32,8 +32,9 @@ class Agent(WithStateMixin, IAgent):
         self._environment: IEnvironment = environment
         self._components: List[IAgentComponent] = components
         self._idle_timeout: int = idle_timeout
+        self._heartreate_ms: float = heartrate_ms
+
         self._mode = self.AGENT_MODE_OBSERVING
-        self._heartreate_ms = heartrate_ms
 
         self.policy.action_space.register_actions(
             [Action("idle",

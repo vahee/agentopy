@@ -7,10 +7,10 @@ from agentopy.protocols import IEnvironment, IEnvironmentComponent, IState
 class Environment(IEnvironment):
     """Implements a base environment class"""
 
-    def __init__(self, components: List[Tuple[str, IEnvironmentComponent]], tick_rate_ms: int = 1000) -> None:
+    def __init__(self, components: List[Tuple[str, IEnvironmentComponent]], tick_rate_ms: float = 1000) -> None:
         """Initializes the environment with the specified state and components"""
         self._components: List[Tuple[str, IEnvironmentComponent]] = components
-        self._tick_rate_ms: int = tick_rate_ms
+        self._tick_rate_ms: float = tick_rate_ms
 
     def start(self) -> aio.Task:
         """Starts the environment by creating an asynchronous task that repeatedly calls the `tick` method and sleeps for 1 second."""
