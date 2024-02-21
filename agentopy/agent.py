@@ -3,9 +3,8 @@ import asyncio as aio
 import logging
 
 from agentopy.protocols import IAgent, IPolicy, IEnvironment, IAgentComponent, IAction
-from agentopy.schemas import ActionResult, SharedStateKeys
+from agentopy.schemas import SharedStateKeys
 from agentopy.state import WithStateMixin
-from agentopy.action import Action
 
 logger = logging.getLogger('agent')
 
@@ -16,14 +15,12 @@ class Agent(WithStateMixin, IAgent):
     AGENT_MODE_OBSERVING = 'observing'
     AGENT_MODE_THINKING = 'thinking'
     AGENT_MODE_ACTING = 'acting'
-    AGENT_MODE_IDLE = 'idle'
 
     def __init__(
         self,
         policy: IPolicy,
         environment: IEnvironment,
         components: List[IAgentComponent],
-        idle_timeout: int = 7200,
         heartrate_ms: float = 1000
     ):
         """Initializes the agent with the specified name and policy"""
@@ -31,14 +28,9 @@ class Agent(WithStateMixin, IAgent):
         self._policy: IPolicy = policy
         self._environment: IEnvironment = environment
         self._components: List[IAgentComponent] = components
-        self._idle_timeout: int = idle_timeout
         self._heartreate_ms: float = heartrate_ms
 
         self._mode = self.AGENT_MODE_OBSERVING
-
-        self.policy.action_space.register_actions(
-            [Action("idle",
-                    "use this action to stay idle until there are new observations or actions to take", self.idle)])
 
         for _, component in self._environment.components:
             self.policy.action_space.register_actions(
@@ -101,24 +93,13 @@ class Agent(WithStateMixin, IAgent):
         result = await action.call(**arguments)
         self.state.set_item(SharedStateKeys.AGENT_ACTION_RESULT, result)
 
-        # [acting] if agent did not get in idle mode, it goes back to observing
-        if self._mode != self.AGENT_MODE_IDLE:
-            self._mode = self.AGENT_MODE_OBSERVING
-
-    async def idle(self, reason: str = "") -> ActionResult:
-        """Does nothing until there are new observations or actions to take"""
-        if self._mode != self.AGENT_MODE_IDLE:
-            self._mode = self.AGENT_MODE_IDLE
-            self._idle_start_time = aio.get_event_loop().time()
-        elif aio.get_event_loop().time() - self._idle_start_time > self._idle_timeout:
-            self._mode = self.AGENT_MODE_OBSERVING
-        return ActionResult(value=f"staying idle for {self._idle_timeout // 3600} hours", success=True)
+        self._mode = self.AGENT_MODE_OBSERVING
 
     async def heartbeat(self) -> None:
         """The agent's heartbeat, which is called periodically to update the agent's internal state."""
         logger.info(f"Agent heartbeat in {self._mode} mode")
 
-        await aio.gather(*[component.on_heartbeat(self.state) for component in self._components])
+        await aio.gather(*[component.on_heartbeat(self) for component in self._components])
 
         if self._heartreate_ms == 0:
             # if heartreate_ms is 0, then the heartbeat is synchronous, so we do all modes in one heartbeat
@@ -128,8 +109,6 @@ class Agent(WithStateMixin, IAgent):
                 await self.think()
             if self._mode == self.AGENT_MODE_ACTING:
                 await self.act()
-            if self._mode == self.AGENT_MODE_IDLE:
-                await self.idle()
         else:
             # if heartreate_ms is not 0, then the heartbeat is asynchronous, so we do one mode per heartbeat
             if self._mode == self.AGENT_MODE_OBSERVING:
@@ -138,5 +117,3 @@ class Agent(WithStateMixin, IAgent):
                 await self.think()
             elif self._mode == self.AGENT_MODE_ACTING:
                 await self.act()
-            elif self._mode == self.AGENT_MODE_IDLE:
-                await self.idle()

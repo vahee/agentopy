@@ -119,7 +119,7 @@ class IAgentComponent(IStateful, Protocol):
         """Returns the action space of the component"""
         ...
 
-    async def on_heartbeat(self, agent_state: IState) -> None:
+    async def on_heartbeat(self, agent: IAgent) -> None:
         """Performs a single step of the component's lifecycle"""
         ...
 
