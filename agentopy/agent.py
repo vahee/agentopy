@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict, Any
 import asyncio as aio
 import logging
 
@@ -45,12 +45,25 @@ class Agent(WithStateMixin, IAgent):
         return self._policy
 
     @property
+    def environment(self) -> IEnvironment:
+        return self._environment
+
+    @property
     def _mode(self) -> str:
         return self.state.get_item(SharedStateKeys.AGENT_MODE)
 
     @_mode.setter
     def _mode(self, value: str) -> None:
         self.state.set_item(SharedStateKeys.AGENT_MODE, value)
+
+    def info(self) -> Dict[str, Any]:
+        """Returns information about the agent"""
+        return {
+            "policy": self.policy.info(),
+            "environment": self.environment.info(),
+            "components": [component.info() for component in self._components],
+            "heartrate_ms": self._heartreate_ms,
+        }
 
     def start(self) -> aio.Task:
         """

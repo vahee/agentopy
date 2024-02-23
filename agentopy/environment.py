@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Dict, Any
 import asyncio as aio
 
 from agentopy.protocols import IEnvironment, IEnvironmentComponent, IState
@@ -28,6 +28,13 @@ class Environment(IEnvironment):
     async def observe(self) -> List[Tuple[str, IState]]:
         """Returns the current state of the environment"""
         return [(name, component.state) for name, component in self._components]
+
+    def info(self) -> Dict[str, Any]:
+        """Returns information about the environment"""
+        return {
+            "components": [component.info() for _, component in self._components],
+            "tick_rate_ms": self._tick_rate_ms,
+        }
 
     async def tick(self) -> None:
         """Ticks the environment"""

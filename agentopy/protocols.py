@@ -76,8 +76,17 @@ class IAgent(IStateful, Protocol):
         """Returns the policy of the agent"""
         ...
 
+    @property
+    def environment(self) -> 'IEnvironment':
+        """Returns the environment of the agent"""
+        ...
+
     def start(self) -> aio.Task:
         """Starts the agent"""
+        ...
+
+    def info(self) -> Dict[str, Any]:
+        """Returns information about the agent"""
         ...
 
 
@@ -106,6 +115,10 @@ class IEnvironmentComponent(IStateful, Protocol):
         """Returns the action space of the component"""
         ...
 
+    def info(self) -> Dict[str, Any]:
+        """Returns information about the component"""
+        ...
+
     async def on_tick(self) -> None:
         """Performs a single step of the component's lifecycle"""
         ...
@@ -117,6 +130,10 @@ class IAgentComponent(IStateful, Protocol):
     @property
     def action_space(self) -> IActionSpace:
         """Returns the action space of the component"""
+        ...
+
+    def info(self) -> Dict[str, Any]:
+        """Returns information about the component"""
         ...
 
     async def on_heartbeat(self, agent: IAgent) -> None:
@@ -137,6 +154,10 @@ class IEnvironment(Protocol):
         """Returns the components of the environment"""
         ...
 
+    def info(self) -> Dict[str, Any]:
+        """Returns information about the environment"""
+        ...
+
     def start(self) -> aio.Task:
         """Starts the environment"""
         ...
@@ -152,4 +173,8 @@ class IPolicy(Protocol):
     @property
     def action_space(self) -> IActionSpace:
         """Returns the action space assigned to the policy"""
+        ...
+
+    def info(self) -> Dict[str, Any]:
+        """Returns information about the policy"""
         ...
