@@ -25,4 +25,5 @@ __all__ = [
     'Action',
     'Agent',
     'Environment',
+    'EntityInfo'
 ]

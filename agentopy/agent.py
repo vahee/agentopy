@@ -32,7 +32,7 @@ class Agent(WithStateMixin, IAgent):
 
         self._mode = self.AGENT_MODE_OBSERVING
 
-        for _, component in self._environment.components:
+        for component in self._environment.components:
             self.policy.action_space.register_actions(
                 component.action_space.all_actions())
 

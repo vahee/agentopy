@@ -1,7 +1,7 @@
 from typing import Optional, List, Any, Tuple, Dict, Protocol, runtime_checkable
 import asyncio as aio
 
-from agentopy.schemas import ActionResult
+from agentopy.schemas import ActionResult, EntityInfo
 
 
 @runtime_checkable
@@ -85,7 +85,7 @@ class IAgent(IStateful, Protocol):
         """Starts the agent"""
         ...
 
-    def info(self) -> Dict[str, Any]:
+    def info(self) -> EntityInfo:
         """Returns information about the agent"""
         ...
 
@@ -115,7 +115,7 @@ class IEnvironmentComponent(IStateful, Protocol):
         """Returns the action space of the component"""
         ...
 
-    def info(self) -> Dict[str, Any]:
+    def info(self) -> EntityInfo:
         """Returns information about the component"""
         ...
 
@@ -132,7 +132,7 @@ class IAgentComponent(IStateful, Protocol):
         """Returns the action space of the component"""
         ...
 
-    def info(self) -> Dict[str, Any]:
+    def info(self) -> EntityInfo:
         """Returns information about the component"""
         ...
 
@@ -150,11 +150,11 @@ class IEnvironment(Protocol):
         ...
 
     @property
-    def components(self) -> List[Tuple[str, IEnvironmentComponent]]:
+    def components(self) -> List[IEnvironmentComponent]:
         """Returns the components of the environment"""
         ...
 
-    def info(self) -> Dict[str, Any]:
+    def info(self) -> EntityInfo:
         """Returns information about the environment"""
         ...
 
@@ -175,6 +175,6 @@ class IPolicy(Protocol):
         """Returns the action space assigned to the policy"""
         ...
 
-    def info(self) -> Dict[str, Any]:
+    def info(self) -> EntityInfo:
         """Returns information about the policy"""
         ...
