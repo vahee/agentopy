@@ -32,7 +32,7 @@ class Agent(WithStateMixin, IAgent):
 
         self._mode = self.AGENT_MODE_OBSERVING
 
-        for _, component in self._environment.components:
+        for component in self._environment.components:
             self.policy.action_space.register_actions(
                 component.action_space.all_actions())
 
@@ -65,17 +65,27 @@ class Agent(WithStateMixin, IAgent):
             "heartrate_ms": self._heartreate_ms,
         }
 
-    def start(self) -> aio.Task:
+    def start(self) -> List[aio.Task]:
         """
-        Starts the agent's heartbeat task, which sends a heartbeat signal every _heartreate_ms millisconds.
-        Returns:
-            asyncio.Task: The task that was created to run the heartbeat.
+        Starts the agent and returns the tasks for the components and the agent itself.
         """
-        async def start_task():
+        tasks = []
+
+        async def start_component(component: IAgentComponent):
+            while True:
+                await component.tick()
+                await aio.sleep(0)
+
+        async def start_agent():
             while True:
                 await self.heartbeat()
                 await aio.sleep(self._heartreate_ms / 1000)
-        return aio.create_task(start_task())
+
+        tasks.append(aio.create_task(start_agent()))
+        for component in self._components:
+            tasks.append(aio.create_task(start_component(component)))
+
+        return tasks
 
     async def observe(self) -> None:
         """Observe the environment and update the agent's internal state."""
@@ -112,7 +122,7 @@ class Agent(WithStateMixin, IAgent):
         """The agent's heartbeat, which is called periodically to update the agent's internal state."""
         logger.info(f"Agent heartbeat in {self._mode} mode")
 
-        await aio.gather(*[component.on_heartbeat(self) for component in self._components])
+        await aio.gather(*[component.on_agent_heartbeat(self) for component in self._components])
 
         if self._heartreate_ms == 0:
             # if heartreate_ms is 0, then the heartbeat is synchronous, so we do all modes in one heartbeat

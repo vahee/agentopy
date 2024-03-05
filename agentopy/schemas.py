@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Dict
 
 
 @dataclass
@@ -17,3 +17,11 @@ class SharedStateKeys:
     AGENT_ACTION: str = "agent/action/name"
     AGENT_ACTION_RESULT: str = "agent/action/result"
     AGENT_ACTION_ARGS: str = "agent/action/args"
+
+
+@dataclass
+class EntityInfo:
+    """Defines information about a component"""
+    name: str
+    params: Dict[str, Any]
+    version: str

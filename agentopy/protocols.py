@@ -1,7 +1,7 @@
 from typing import Optional, List, Any, Tuple, Dict, Protocol, runtime_checkable
 import asyncio as aio
 
-from agentopy.schemas import ActionResult
+from agentopy.schemas import ActionResult, EntityInfo
 
 
 @runtime_checkable
@@ -81,11 +81,11 @@ class IAgent(IStateful, Protocol):
         """Returns the environment of the agent"""
         ...
 
-    def start(self) -> aio.Task:
+    def start(self) -> List[aio.Task]:
         """Starts the agent"""
         ...
 
-    def info(self) -> Dict[str, Any]:
+    def info(self) -> EntityInfo:
         """Returns information about the agent"""
         ...
 
@@ -115,11 +115,11 @@ class IEnvironmentComponent(IStateful, Protocol):
         """Returns the action space of the component"""
         ...
 
-    def info(self) -> Dict[str, Any]:
+    def info(self) -> EntityInfo:
         """Returns information about the component"""
         ...
 
-    async def on_tick(self) -> None:
+    async def tick(self) -> None:
         """Performs a single step of the component's lifecycle"""
         ...
 
@@ -132,11 +132,15 @@ class IAgentComponent(IStateful, Protocol):
         """Returns the action space of the component"""
         ...
 
-    def info(self) -> Dict[str, Any]:
+    def info(self) -> EntityInfo:
         """Returns information about the component"""
         ...
 
-    async def on_heartbeat(self, agent: IAgent) -> None:
+    async def on_agent_heartbeat(self, agent: IAgent) -> None:
+        """Performs a single step of the component's lifecycle"""
+        ...
+
+    async def tick(self) -> None:
         """Performs a single step of the component's lifecycle"""
         ...
 
@@ -150,15 +154,15 @@ class IEnvironment(Protocol):
         ...
 
     @property
-    def components(self) -> List[Tuple[str, IEnvironmentComponent]]:
+    def components(self) -> List[IEnvironmentComponent]:
         """Returns the components of the environment"""
         ...
 
-    def info(self) -> Dict[str, Any]:
+    def info(self) -> EntityInfo:
         """Returns information about the environment"""
         ...
 
-    def start(self) -> aio.Task:
+    def start(self) -> List[aio.Task]:
         """Starts the environment"""
         ...
 
@@ -175,6 +179,6 @@ class IPolicy(Protocol):
         """Returns the action space assigned to the policy"""
         ...
 
-    def info(self) -> Dict[str, Any]:
+    def info(self) -> EntityInfo:
         """Returns information about the policy"""
         ...

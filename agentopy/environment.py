@@ -7,36 +7,33 @@ from agentopy.protocols import IEnvironment, IEnvironmentComponent, IState
 class Environment(IEnvironment):
     """Implements a base environment class"""
 
-    def __init__(self, components: List[Tuple[str, IEnvironmentComponent]], tick_rate_ms: float = 1000) -> None:
+    def __init__(self, components: List[IEnvironmentComponent]) -> None:
         """Initializes the environment with the specified state and components"""
-        self._components: List[Tuple[str, IEnvironmentComponent]] = components
-        self._tick_rate_ms: float = tick_rate_ms
+        self._components: List[IEnvironmentComponent] = components
 
-    def start(self) -> aio.Task:
-        """Starts the environment by creating an asynchronous task that repeatedly calls the `tick` method and sleeps for 1 second."""
-        async def start_task():
+    def start(self) -> List[aio.Task]:
+        """Starts the environment and returns the tasks for the components"""
+        tasks = []
+
+        async def start_component(component: IEnvironmentComponent):
             while True:
-                await self.tick()
-                await aio.sleep(self._tick_rate_ms / 1000)
-        return aio.create_task(start_task())
+                await component.tick()
+                await aio.sleep(0)
+        for component in self._components:
+            tasks.append(aio.create_task(start_component(component)))
+        return tasks
 
     @property
-    def components(self) -> List[Tuple[str, IEnvironmentComponent]]:
+    def components(self) -> List[IEnvironmentComponent]:
         """Returns the components of the environment"""
         return self._components
 
     async def observe(self) -> List[Tuple[str, IState]]:
         """Returns the current state of the environment"""
-        return [(name, component.state) for name, component in self._components]
+        return [(component.info().name, component.state) for component in self._components]
 
     def info(self) -> Dict[str, Any]:
         """Returns information about the environment"""
         return {
-            "components": [component.info() for _, component in self._components],
-            "tick_rate_ms": self._tick_rate_ms,
+            "components": [component.info() for component in self._components],
         }
-
-    async def tick(self) -> None:
-        """Ticks the environment"""
-        for _, component in self._components:
-            await component.on_tick()
