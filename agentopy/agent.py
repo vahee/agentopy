@@ -28,7 +28,7 @@ class Agent(WithStateMixin, IAgent):
         self._policy: IPolicy = policy
         self._environment: IEnvironment = environment
         self._components: List[IAgentComponent] = components
-        self._heartreate_ms: float = heartrate_ms
+        self._heartrate_ms: float = heartrate_ms
 
         self._mode = self.AGENT_MODE_OBSERVING
 
@@ -62,7 +62,7 @@ class Agent(WithStateMixin, IAgent):
             "policy": self.policy.info(),
             "environment": self.environment.info(),
             "components": [component.info() for component in self._components],
-            "heartrate_ms": self._heartreate_ms,
+            "heartrate_ms": self._heartrate_ms,
         }
 
     def start(self) -> List[aio.Task]:
@@ -79,7 +79,7 @@ class Agent(WithStateMixin, IAgent):
         async def start_agent():
             while True:
                 await self.heartbeat()
-                await aio.sleep(self._heartreate_ms / 1000)
+                await aio.sleep(self._heartrate_ms / 1000)
 
         tasks.append(aio.create_task(start_agent()))
         for component in self._components:
@@ -124,7 +124,7 @@ class Agent(WithStateMixin, IAgent):
 
         await aio.gather(*[component.on_agent_heartbeat(self) for component in self._components])
 
-        if self._heartreate_ms == 0:
+        if self._heartrate_ms == 0:
             # if heartreate_ms is 0, then the heartbeat is synchronous, so we do all modes in one heartbeat
             if self._mode == self.AGENT_MODE_OBSERVING:
                 await self.observe()
