@@ -1,4 +1,4 @@
-from typing import List, Tuple, Dict, Any
+from typing import List, Tuple, Dict, Any, Iterable
 import asyncio as aio
 
 from agentopy.protocols import IEnvironment, IEnvironmentComponent, IState
@@ -11,16 +11,18 @@ class Environment(IEnvironment):
         """Initializes the environment with the specified state and components"""
         self._components: List[IEnvironmentComponent] = components
 
-    def start(self) -> List[aio.Task]:
+    def start(self) -> Iterable[aio.Task]:
         """Starts the environment and returns the tasks for the components"""
-        tasks = []
+        tasks = set()
 
         async def start_component(component: IEnvironmentComponent):
             while True:
                 await component.tick()
                 await aio.sleep(0)
         for component in self._components:
-            tasks.append(aio.create_task(start_component(component)))
+            task = aio.create_task(start_component(component))
+            tasks.add(task)
+            task.add_done_callback(tasks.discard)
         return tasks
 
     @property

@@ -2,16 +2,17 @@ import inspect
 from typing import Callable, Dict
 
 from agentopy.protocols import IAction
-from agentopy.schemas import ActionResult
+from agentopy.schemas import ActionResult, EntityInfo
 
 
 class Action(IAction):
     """Implements an action class"""
 
-    def __init__(self, name: str, description: str, action_fn: Callable) -> None:
+    def __init__(self, name: str, description: str, action_fn: Callable, component_info: EntityInfo) -> None:
         self._name: str = name
         self._description: str = description
         self._action_fn: Callable = action_fn
+        self._component_info: EntityInfo = component_info
 
     def name(self) -> str:
         """Returns the name of the action"""
@@ -20,6 +21,10 @@ class Action(IAction):
     def description(self) -> str:
         """Returns the description of the action"""
         return self._description
+
+    def component_info(self) -> EntityInfo:
+        """Returns the information about the component"""
+        return self._component_info
 
     def arguments(self) -> Dict[str, str]:
         """Returns the arguments of the action"""

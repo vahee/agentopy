@@ -1,4 +1,4 @@
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Iterable
 import asyncio as aio
 import logging
 
@@ -65,11 +65,11 @@ class Agent(WithStateMixin, IAgent):
             "heartrate_ms": self._heartrate_ms,
         }
 
-    def start(self) -> List[aio.Task]:
+    def start(self) -> Iterable[aio.Task]:
         """
         Starts the agent and returns the tasks for the components and the agent itself.
         """
-        tasks = []
+        tasks = set()
 
         async def start_component(component: IAgentComponent):
             while True:
@@ -81,15 +81,20 @@ class Agent(WithStateMixin, IAgent):
                 await self.heartbeat()
                 await aio.sleep(self._heartrate_ms / 1000)
 
-        tasks.append(aio.create_task(start_agent()))
+        task = aio.create_task(start_agent())
+        tasks.add(task)
+        task.add_done_callback(tasks.discard)
+
         for component in self._components:
-            tasks.append(aio.create_task(start_component(component)))
+            task = aio.create_task(start_component(component))
+            tasks.add(task)
+            task.add_done_callback(tasks.discard)
 
         return tasks
 
     async def observe(self) -> None:
         """Observe the environment and update the agent's internal state."""
-        for component_name, component_state in await self._environment.observe():
+        for component_name, component_state in await self.environment.observe():
             prefix = f"environment/components/{component_name}/"
             self.state.clear(prefix)
             self.state.merge(component_state, prefix)

@@ -1,4 +1,4 @@
-from typing import Optional, List, Any, Tuple, Dict, Protocol, runtime_checkable
+from typing import Optional, List, Any, Tuple, Dict, Protocol, Iterable, runtime_checkable
 import asyncio as aio
 
 from agentopy.schemas import ActionResult, EntityInfo
@@ -48,7 +48,7 @@ class IStateful(Protocol):
 @runtime_checkable
 class IAction(Protocol):
     """Implements an action that can be taken"""
-    async def call(self, *args: Any, **kwds: Any) -> ActionResult:
+    async def call(self, *args: Any, **kwargs: Any) -> ActionResult:
         """Performs the action"""
         ...
 
@@ -81,7 +81,7 @@ class IAgent(IStateful, Protocol):
         """Returns the environment of the agent"""
         ...
 
-    def start(self) -> List[aio.Task]:
+    def start(self) -> Iterable[aio.Task]:
         """Starts the agent"""
         ...
 
@@ -162,7 +162,7 @@ class IEnvironment(Protocol):
         """Returns information about the environment"""
         ...
 
-    def start(self) -> List[aio.Task]:
+    def start(self) -> Iterable[aio.Task]:
         """Starts the environment"""
         ...
 
