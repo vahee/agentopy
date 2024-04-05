@@ -20,6 +20,10 @@ class IState(Protocol):
         """Sets the state item with the specified key and value"""
         ...
 
+    def set_nested_item(self, prefix: str, data: Dict[str, Any]) -> None:
+        """Sets the state item with the specified prefix and data"""
+        ...
+
     def get_item(self, key: str) -> Any:
         """Returns state item with the specified key"""
         ...
@@ -36,6 +40,10 @@ class IState(Protocol):
         """Returns the keys in the state"""
         ...
 
+    def slice_by_prefix(self, prefix: str) -> 'IState':
+        """Returns a new state with items that have the specified prefix"""
+        ...
+
 
 @runtime_checkable
 class IStateful(Protocol):
@@ -48,6 +56,7 @@ class IStateful(Protocol):
 @runtime_checkable
 class IAction(Protocol):
     """Implements an action that can be taken"""
+
     async def call(self, *args: Any, **kwargs: Any) -> ActionResult:
         """Performs the action"""
         ...
@@ -64,9 +73,14 @@ class IAction(Protocol):
         """Returns the arguments of the action"""
         ...
 
+    def entity_info(self) -> EntityInfo:
+        """Returns the information about the parent entity"""
+        ...
+
 
 class IAgent(IStateful, Protocol):
     """Implements an autonomous agent that can interact with the environment"""
+
     async def heartbeat(self) -> None:
         """Performs a single step of the agent's heartbeat and returns whether the agent is still alive"""
         ...
@@ -107,7 +121,7 @@ class IActionSpace(Protocol):
         ...
 
 
-class IEnvironmentComponent(IStateful, Protocol):
+class IEnvironmentComponent(Protocol):
     """Implements an environment component that can be interacted with"""
 
     @property
@@ -123,8 +137,12 @@ class IEnvironmentComponent(IStateful, Protocol):
         """Performs a single step of the component's lifecycle"""
         ...
 
+    async def observe(self, caller_context: IState) -> IState:
+        """Returns the current state of the component for the specified observer"""
+        ...
 
-class IAgentComponent(IStateful, Protocol):
+
+class IAgentComponent(Protocol):
     """Implements an agent component"""
 
     @property
@@ -137,7 +155,7 @@ class IAgentComponent(IStateful, Protocol):
         ...
 
     async def on_agent_heartbeat(self, agent: IAgent) -> None:
-        """Performs a single step of the component's lifecycle"""
+        """Callback on agent heartbeat"""
         ...
 
     async def tick(self) -> None:
@@ -149,8 +167,8 @@ class IAgentComponent(IStateful, Protocol):
 class IEnvironment(Protocol):
     """Implements an environment that can be interacted with"""
 
-    async def observe(self) -> List[Tuple[str, IState]]:
-        """Returns the current state of the environment"""
+    async def observe(self, caller_context: IState) -> List[Tuple[str, IState]]:
+        """Returns the current state of the environment for the specified observer"""
         ...
 
     @property
@@ -170,6 +188,7 @@ class IEnvironment(Protocol):
 @runtime_checkable
 class IPolicy(Protocol):
     """Implements a policy that can be used to select actions"""
+
     async def action(self, state: IState) -> Tuple[IAction, Dict[str, Any], Dict[str, Any]]:
         """Returns an action to take, along with its arguments and 'thoughts' on why action was chosen"""
         ...

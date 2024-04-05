@@ -3,7 +3,6 @@ from typing import List
 from collections import OrderedDict
 
 from agentopy.protocols import IActionSpace, IAction
-from agentopy.action import Action
 
 
 class ActionSpace(IActionSpace):

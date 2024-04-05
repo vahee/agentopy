@@ -33,6 +33,26 @@ class State(IState):
             raise Exception(f"State is full, cannot add item with key {key}")
         self._data[key] = value
 
+    def set_nested_item(self, prefix: str, data: Dict[str, Any]) -> None:
+        """Adds the specified data items to the state"""
+        def nest(prefix: str, data: Dict[str, Any]):
+            for key, value in data.items():
+                if isinstance(value, dict):
+                    nest(f"{prefix}/{key}", value)
+                else:
+                    self.set_item(f"{prefix}/{key}", value)
+        nest(prefix, data)
+
+    def slice_by_prefix(self, prefix: str) -> IState:
+        """Returns a new state with items that have the specified prefix"""
+        state = State(self._max_keys)
+        for key, value in self._data.items():
+            if key.startswith(prefix):
+                if key != prefix:
+                    key = key[len(prefix):].lstrip('/')
+                state.set_item(key, value)
+        return state
+
     def get_item(self, key: str) -> Any:
         """Returns the data item with the specified key"""
         return self._data.get(key)
@@ -48,6 +68,9 @@ class State(IState):
     def keys(self) -> List[str]:
         """Returns the keys in the state"""
         return list(self._data.keys())
+
+    def __dict__(self) -> Dict[str, Any]:
+        return self._data
 
 
 class WithStateMixin:

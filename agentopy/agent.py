@@ -94,7 +94,7 @@ class Agent(WithStateMixin, IAgent):
 
     async def observe(self) -> None:
         """Observe the environment and update the agent's internal state."""
-        for component_name, component_state in await self.environment.observe():
+        for component_name, component_state in await self.environment.observe(self.state.slice_by_prefix(SharedStateKeys.AGENT_ACTION_CONTEXT)):
             prefix = f"environment/components/{component_name}/"
             self.state.clear(prefix)
             self.state.merge(component_state, prefix)

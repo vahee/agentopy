@@ -17,6 +17,7 @@ class SharedStateKeys:
     AGENT_ACTION: str = "agent/action/name"
     AGENT_ACTION_RESULT: str = "agent/action/result"
     AGENT_ACTION_ARGS: str = "agent/action/args"
+    AGENT_ACTION_CONTEXT: str = "agent/action_context"
 
 
 @dataclass

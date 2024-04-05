@@ -30,9 +30,22 @@ class Environment(IEnvironment):
         """Returns the components of the environment"""
         return self._components
 
-    async def observe(self) -> List[Tuple[str, IState]]:
+    async def observe(self, caller_context: IState) -> List[Tuple[str, IState]]:
         """Returns the current state of the environment"""
-        return [(component.info().name, component.state) for component in self._components]
+        coroutines = []
+
+        for component in self._components:
+            context = caller_context.slice_by_prefix(f"_any")
+            context.merge(caller_context.slice_by_prefix(
+                f"_any/observe"), None)
+            context.merge(caller_context.slice_by_prefix(
+                f"{component.info().name}/_any"), None)
+            context.merge(caller_context.slice_by_prefix(
+                f"{component.info().name}/observe"), None)
+            coroutines.append(component.observe(context))
+
+        states = await aio.gather(*coroutines)
+        return [(component.info().name, state) for component, state in zip(self._components, states)]
 
     def info(self) -> Dict[str, Any]:
         """Returns information about the environment"""
