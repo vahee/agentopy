@@ -52,11 +52,11 @@ class Action(IAction):
 
         context = caller_context.slice_by_prefix(f"_any")
         context.merge(caller_context.slice_by_prefix(
-            f"_any/{self._name}"), None)
+            f"_any.{self._name}"), None)
         context.merge(caller_context.slice_by_prefix(
-            f"{self._entity_info.name}/_any"), None)
+            f"{self._entity_info.name}._any"), None)
         context.merge(caller_context.slice_by_prefix(
-            f"{self._entity_info.name}/{self._name}"), None)
+            f"{self._entity_info.name}.{self._name}"), None)
 
         kwargs['caller_context'] = context
         return await self._action_fn(**kwargs)

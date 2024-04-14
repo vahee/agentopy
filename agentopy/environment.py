@@ -37,11 +37,11 @@ class Environment(IEnvironment):
         for component in self._components:
             context = caller_context.slice_by_prefix(f"_any")
             context.merge(caller_context.slice_by_prefix(
-                f"_any/observe"), None)
+                f"_any.observe"), None)
             context.merge(caller_context.slice_by_prefix(
-                f"{component.info().name}/_any"), None)
+                f"{component.info().name}._any"), None)
             context.merge(caller_context.slice_by_prefix(
-                f"{component.info().name}/observe"), None)
+                f"{component.info().name}.observe"), None)
             coroutines.append(component.observe(context))
 
         states = await aio.gather(*coroutines)

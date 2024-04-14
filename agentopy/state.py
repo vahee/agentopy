@@ -38,9 +38,9 @@ class State(IState):
         def nest(prefix: str, data: Dict[str, Any]):
             for key, value in data.items():
                 if isinstance(value, dict):
-                    nest(f"{prefix}/{key}", value)
+                    nest(f"{prefix}.{key}", value)
                 else:
-                    self.set_item(f"{prefix}/{key}", value)
+                    self.set_item(f"{prefix}.{key}", value)
         nest(prefix, data)
 
     def slice_by_prefix(self, prefix: str) -> IState:
@@ -49,7 +49,7 @@ class State(IState):
         for key, value in self._data.items():
             if key.startswith(prefix):
                 if key != prefix:
-                    key = key[len(prefix):].lstrip('/')
+                    key = key[len(prefix):].lstrip('.')
                 state.set_item(key, value)
         return state
 
