@@ -11,18 +11,27 @@ class Environment(IEnvironment):
         """Initializes the environment with the specified state and components"""
         self._components: List[IEnvironmentComponent] = components
 
-    def start(self) -> Iterable[aio.Task]:
+    def start(self, sync=False) -> Iterable[aio.Task]:
         """Starts the environment and returns the tasks for the components"""
         tasks = set()
 
-        async def start_component(component: IEnvironmentComponent):
-            while True:
-                await component.tick()
-                await aio.sleep(0)
-        for component in self._components:
-            task = aio.create_task(start_component(component))
-            tasks.add(task)
-            task.add_done_callback(tasks.discard)
+        if not sync:
+            async def start_component(component: IEnvironmentComponent):
+                while True:
+                    await component.tick()
+                    await aio.sleep(0)
+            for component in self._components:
+                task = aio.create_task(start_component(component))
+                tasks.add(task)
+                task.add_done_callback(tasks.discard)
+        else:
+            async def start_all_components():
+                while True:
+                    for component in self._components:
+                        await component.tick()
+                    await aio.sleep(0)
+
+            tasks.add(aio.create_task(start_all_components()))
         return tasks
 
     @property

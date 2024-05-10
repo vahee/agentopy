@@ -180,7 +180,7 @@ class IEnvironment(Protocol):
         """Returns information about the environment"""
         ...
 
-    def start(self) -> Iterable[aio.Task]:
+    def start(self, sync: Optional[bool]) -> Iterable[aio.Task]:
         """Starts the environment"""
         ...
 
