@@ -127,7 +127,7 @@ class Agent(WithStateMixin, IAgent):
         """The agent's heartbeat, which is called periodically to update the agent's internal state."""
         logger.info(f"Agent heartbeat in {self._mode} mode")
 
-        await aio.gather(*[component.on_agent_heartbeat(self) for component in self._components])
+        _ = [await component.on_agent_heartbeat(self) for component in self._components]
 
         if self._heartrate_ms == 0:
             # if heartrate_ms is 0, then the heartbeat is synchronous, so we do all modes in one heartbeat

@@ -41,7 +41,7 @@ class Environment(IEnvironment):
 
     async def observe(self, caller_context: IState) -> List[Tuple[str, IState]]:
         """Returns the current state of the environment"""
-        coroutines = []
+        states = []
 
         for component in self._components:
             context = caller_context.slice_by_prefix(f"_any")
@@ -51,9 +51,8 @@ class Environment(IEnvironment):
                 f"{component.info().name}._any"), None)
             context.merge(caller_context.slice_by_prefix(
                 f"{component.info().name}.observe"), None)
-            coroutines.append(component.observe(context))
+            states.append(await component.observe(context))
 
-        states = await aio.gather(*coroutines)
         return [(component.info().name, state) for component, state in zip(self._components, states)]
 
     def info(self) -> Dict[str, Any]:
