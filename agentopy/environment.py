@@ -48,9 +48,9 @@ class Environment(IEnvironment):
             context.merge(caller_context.slice_by_prefix(
                 f"_any.observe"), None)
             context.merge(caller_context.slice_by_prefix(
-                f"{component.info().name}._any"), None)
+                f"environment.components.{component.info().name}._any"), None)
             context.merge(caller_context.slice_by_prefix(
-                f"{component.info().name}.observe"), None)
+                f"environment.components.{component.info().name}.observe"), None)
             states.append(await component.observe(context))
 
         return [(component.info().name, state) for component, state in zip(self._components, states)]
